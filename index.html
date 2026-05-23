@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>DayFlow — Schedule, Tasks & Points</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- PAGES -->
+<div id="page-home" class="page active">
+  <div class="page-inner">
+    <div class="page-head">
+      <div class="page-eyebrow">Good morning ☀️</div>
+      <div class="page-title" style="font-family:'Playfair Display',serif;font-size:36px;font-weight:600;">Today's <em>Flow</em></div>
+      <div class="page-sub">Stay on schedule. Earn points. Build momentum.</div>
+    </div>
+
+    <div id="notif-bar" class="notif-bar" style="display:none;">
+      🔔 Enable notifications to get 30-min reminders
+      <button onclick="requestNotifications()">Enable</button>
+    </div>
+
+    <div class="xp-bar-wrap card">
+      <div class="xp-bar-head">
+        <div class="xp-level">Level <span id="h-level">1</span> — <span id="h-rank">Seedling</span></div>
+        <div class="xp-pts"><span id="h-xp">0</span> XP</div>
+      </div>
+      <div class="xp-track"><div class="xp-fill" id="h-xp-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box green"><div class="s-val" id="h-done">0</div><div class="s-lbl">Done today</div></div>
+      <div class="stat-box amber"><div class="s-val" id="h-streak">0</div><div class="s-lbl">Streak 🔥</div></div>
+      <div class="stat-box sky"><div class="s-val" id="h-tasks">0</div><div class="s-lbl">Tasks left</div></div>
+    </div>
+
+    <div class="quote-strip" id="home-quote">Every task you log is a vote for the person you're becoming.</div>
+
+    <div class="card">
+      <div class="card-label">Today's schedule</div>
+      <div id="home-schedule-list"></div>
+      <div style="text-align:center;margin-top:8px;">
+        <button onclick="goTo('schedule')" style="background:none;border:none;color:var(--accent);font-family:'Sora',sans-serif;font-size:13px;cursor:pointer;font-weight:500;">View full schedule →</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Today's ring</div>
+      <div class="ring-wrap">
+        <div class="ring-wrap-inner">
+          <svg class="ring" width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--bg3)" stroke-width="10"/>
+            <circle id="ring-arc" cx="60" cy="60" r="50" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314" style="transition:stroke-dashoffset 0.8s ease;"/>
+          </svg>
+          <div class="ring-text">
+            <div class="ring-pct" id="ring-pct">0%</div>
+            <div class="ring-sub">done</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-schedule" class="page">
+  <div class="page-inner">
+    <div class="page-head">
+      <div class="page-eyebrow">Plan your day</div>
+      <div class="page-title">Daily <em>Schedule</em></div>
+      <div class="page-sub">Tap a slot to add a task. Log it when you're done to earn points.</div>
+    </div>
+    <div class="day-tabs" id="day-tabs"></div>
+    <div id="schedule-list"></div>
+  </div>
+</div>
+
+<div id="page-tasks" class="page">
+  <div class="page-inner">
+    <div class="page-head">
+      <div class="page-eyebrow">To-do list</div>
+      <div class="page-title">Your <em>Tasks</em></div>
+      <div class="page-sub">Quick tasks outside your schedule. Check them off for points.</div>
+    </div>
+    <div class="task-add-row">
+      <button class="cat-pill active" data-cat="🎯">🎯</button>
+      <button class="cat-pill" data-cat="📦">📦</button>
+      <button class="cat-pill" data-cat="💼">💼</button>
+      <button class="cat-pill" data-cat="🌿">🌿</button>
+      <button class="cat-pill" data-cat="🎧">🎧</button>
+      <input type="text" class="task-input" id="task-input" placeholder="Add a task..." />
+      <button class="task-add-btn" id="task-add-btn">+ Add</button>
+    </div>
+    <div class="section-divider">Active tasks</div>
+    <div id="task-list"></div>
+    <div id="task-empty" class="empty-state" style="display:none"><div class="ei">🌿</div><p>All clear — nothing left to do.</p></div>
+    <div style="margin-top:16px;">
+      <button class="comp-toggle" id="comp-toggle"><span class="comp-arrow">▶</span> Completed (<span id="comp-count">0</span>)</button>
+      <div class="comp-list" id="comp-list"></div>
+    </div>
+  </div>
+</div>
+
+<div id="page-points" class="page">
+  <div class="page-inner">
+    <div class="page-head">
+      <div class="page-eyebrow">Your progress</div>
+      <div class="page-title">Points & <em>Rewards</em></div>
+    </div>
+
+    <div class="level-card">
+      <div class="level-card-eyebrow">Current level</div>
+      <div class="level-card-title" id="p-level-num">1</div>
+      <div class="level-card-sub" id="p-rank-name">Seedling 🌱</div>
+      <div class="level-card-xp">
+        <div class="big" id="p-xp">0</div>
+        <div class="small">Total XP</div>
+      </div>
+      <div class="lv-bar-wrap">
+        <div class="lv-bar-track"><div class="lv-bar-fill" id="p-lv-fill" style="width:0%"></div></div>
+        <div class="lv-bar-label"><span id="p-xp-next">100</span> XP to next level</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-label">Achievements</div>
+      <div class="achievements-grid" id="achieve-grid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Recent activity</div>
+      <div id="history-list"></div>
+      <div id="history-empty" class="empty-state" style="display:none;padding:20px;"><p>No activity yet. Start logging!</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <button class="nav-btn active" data-page="home" onclick="goTo('home')">
+    <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
+  </button>
+  <button class="nav-btn" data-page="schedule" onclick="goTo('schedule')">
+    <span class="nav-icon">📅</span><span class="nav-label">Schedule</span>
+  </button>
+  <button class="nav-btn" data-page="tasks" onclick="goTo('tasks')">
+    <span class="nav-icon">✅</span><span class="nav-label">Tasks</span>
+  </button>
+  <button class="nav-btn" data-page="points" onclick="goTo('points')">
+    <span class="nav-icon">⭐</span><span class="nav-label">Points</span>
+  </button>
+</nav>
+
+<!-- SLOT MODAL -->
+<div class="modal-overlay" id="slot-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add to slot</div>
+    <div class="modal-field">
+      <div class="modal-label">Task name</div>
+      <input type="text" class="modal-input" id="modal-task-name" placeholder="What will you do?" />
+    </div>
+    <div class="modal-row">
+      <div class="modal-field">
+        <div class="modal-label">Category</div>
+        <select class="modal-select" id="modal-cat">
+          <option value="work">💼 Work</option>
+          <option value="health">🌿 Health</option>
+          <option value="errand">📦 Errand</option>
+          <option value="personal">🎯 Personal</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">Points</div>
+        <select class="modal-select" id="modal-pts">
+          <option value="10">10 — Easy</option>
+          <option value="20" selected>20 — Normal</option>
+          <option value="35">35 — Hard</option>
+          <option value="50">50 — Boss</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveSlot()">Save slot</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
